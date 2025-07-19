@@ -17,27 +17,44 @@ const MapView = ({ deliveries, couriers, loading }) => {
 const mapMarkers = React.useMemo(() => {
     if (!deliveries || !couriers) return [];
     
-    const deliveryMarkers = deliveries.map(delivery => ({
+    const deliveryMarkers = deliveries.map((delivery, index) => ({
       id: delivery.Id,
       type: "delivery",
       position: {
-        lat: delivery.deliveryAddress?.coordinates?.lat || 51.5074 + (Math.random() - 0.5) * 0.1,
-        lng: delivery.deliveryAddress?.coordinates?.lng || -0.1278 + (Math.random() - 0.5) * 0.1
+        lat: 51.5074 + (Math.random() - 0.5) * 0.1,
+        lng: -0.1278 + (Math.random() - 0.5) * 0.1
       },
-      data: delivery,
+      data: {
+        ...delivery,
+        orderNumber: delivery.order_number || delivery.orderNumber || `DEL-${delivery.Id}`,
+        deliveryAddress: {
+          name: delivery.delivery_address_name || 'Unknown Customer',
+          street: delivery.delivery_address_street || 'Unknown Street',
+          city: delivery.delivery_address_city || 'London',
+          postcode: delivery.delivery_address_postcode || 'N/A'
+        },
+        courier: delivery.courier ? {
+          name: delivery.courier.Name || delivery.courier.name || 'Unknown Courier',
+          vehicleType: delivery.courier.vehicle_type || delivery.courier.vehicleType || 'Unknown Vehicle'
+        } : null
+      },
       status: delivery.status
     }));
 
     const courierMarkers = couriers
-      .filter(courier => courier.currentLocation)
-      .map(courier => ({
+      .filter(courier => courier.status !== 'offline')
+      .map((courier, index) => ({
         id: `courier-${courier.Id}`,
         type: "courier",
         position: {
-          lat: courier.currentLocation?.coordinates?.lat || 51.5074 + (Math.random() - 0.5) * 0.1,
-          lng: courier.currentLocation?.coordinates?.lng || -0.1278 + (Math.random() - 0.5) * 0.1
+          lat: 51.5074 + (Math.random() - 0.5) * 0.1,
+          lng: -0.1278 + (Math.random() - 0.5) * 0.1
         },
-        data: courier,
+        data: {
+          ...courier,
+          name: courier.Name || courier.name || 'Unknown Courier',
+          currentLocation: courier.current_location || 'London Area'
+        },
         status: courier.status
       }));
 

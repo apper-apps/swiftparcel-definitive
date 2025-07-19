@@ -348,6 +348,67 @@ async getCourierStats() {
     }
   }
 
+  async updateRouteOrder(courierId, orderedStops) {
+    try {
+      // This would typically update the route order in the database
+      // For now, return the optimized route data
+      return {
+        deliveries: orderedStops,
+        routeStops: orderedStops.map((stop, index) => ({
+          ...stop,
+          sequence: index + 1
+        })),
+        optimizedRoute: orderedStops,
+        totalDistance: orderedStops.length * 2.5,
+        estimatedTime: orderedStops.length * 15,
+        courierCapacity: 10,
+        totalWeight: orderedStops.reduce((sum, stop) => sum + (stop.packageWeight || 0), 0)
+      };
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating route order:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      throw error;
+    }
+  }
+
+  async optimizeRoute(courierId, stops) {
+    try {
+      // Simulate route optimization algorithm
+      const optimizedStops = [...stops].sort((a, b) => {
+        // Simple optimization based on postcode
+        const postcodeA = a.address?.postcode || '';
+        const postcodeB = b.address?.postcode || '';
+        return postcodeA.localeCompare(postcodeB);
+      });
+
+      const timeSaved = Math.floor(Math.random() * 30) + 10; // 10-40 minutes saved
+
+      return {
+        deliveries: optimizedStops,
+        routeStops: optimizedStops.map((stop, index) => ({
+          ...stop,
+          sequence: index + 1
+        })),
+        optimizedRoute: optimizedStops,
+        totalDistance: optimizedStops.length * 2.2, // Slightly reduced distance
+        estimatedTime: optimizedStops.length * 12, // Reduced time
+        timeSaved: timeSaved,
+        courierCapacity: 10,
+        totalWeight: optimizedStops.reduce((sum, stop) => sum + (stop.packageWeight || 0), 0)
+      };
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error optimizing route:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      throw error;
+    }
+  }
+
   async getRouteForCourier(courierId) {
     try {
       const params = {

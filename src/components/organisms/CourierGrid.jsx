@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import ApperIcon from "@/components/ApperIcon";
 import Empty from "@/components/ui/Empty";
 import Loading from "@/components/ui/Loading";
+import Deliveries from "@/components/pages/Deliveries";
 import StatusBadge from "@/components/molecules/StatusBadge";
 import Card from "@/components/atoms/Card";
 
@@ -59,23 +60,23 @@ const CourierGrid = ({ couriers, loading, onViewCourier, onPlanRoute }) => {
             </div>
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
-<span className="text-sm text-secondary-600">Active Deliveries</span>
+                    <span className="text-sm text-secondary-600">Active Deliveries</span>
                     <span className="font-medium text-secondary-900">
-                        {courier.active_deliveries || courier.activeDeliveries}/{courier.capacity}
+                        {courier.active_deliveries || courier.activeDeliveries || 0}/{courier.capacity || 10}
                     </span>
                 </div>
                 <div className="w-full bg-secondary-200 rounded-full h-2">
                     <div
                         className="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full transition-all duration-300"
-style={{
-                            width: `${(courier.active_deliveries || courier.activeDeliveries) / courier.capacity * 100}%`
+                        style={{
+                            width: `${((courier.active_deliveries || courier.activeDeliveries || 0) / (courier.capacity || 10)) * 100}%`
                         }} />
                 </div>
-{(courier.current_location || courier.currentLocation) && <div className="flex items-center text-sm text-secondary-600">
+                {(courier.current_location || courier.currentLocation) && <div className="flex items-center text-sm text-secondary-600">
                     <ApperIcon name="MapPin" size={14} className="mr-2" />
                     {typeof (courier.current_location || courier.currentLocation) === 'string' 
                       ? (courier.current_location || courier.currentLocation)
-                      : (courier.current_location || courier.currentLocation)?.area}
+                      : (courier.current_location || courier.currentLocation)?.area || 'Unknown Location'}
                 </div>}
                 <div
                     className="flex items-center justify-between pt-2 border-t border-secondary-200">
@@ -84,7 +85,7 @@ style={{
                                         </div>
                     <ApperIcon name="ChevronRight" size={16} className="text-secondary-400" />
                 </div>
-{(courier.active_deliveries || courier.activeDeliveries) > 0 && <div className="mt-3 pt-3 border-t border-secondary-200">
+                {(courier.active_deliveries || courier.activeDeliveries || 0) > 0 && <div className="mt-3 pt-3 border-t border-secondary-200">
                     <button
                         onClick={e => {
                             e.stopPropagation();
@@ -93,11 +94,11 @@ style={{
                         className="w-full px-3 py-2 text-sm font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors flex items-center justify-center">
                         <ApperIcon name="Route" size={14} className="mr-2" />Plan Route
                                           </button>
-                </div>}
+</div>}
             </div>
         </Card>
     </motion.div>)}
-</div>
+    </div>
   );
 };
 

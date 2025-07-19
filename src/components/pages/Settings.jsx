@@ -489,23 +489,57 @@ const Settings = () => {
               </div>
             </div>
 
+            {/* Rate Limiting & Monitoring */}
+            <div className="border-t border-secondary-200 pt-6">
+              <h3 className="text-md font-medium text-secondary-900 mb-4">API Monitoring & Security</h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField label="Rate Limit (requests/minute)">
+                    <Select defaultValue="1000">
+                      <option value="100">100 req/min</option>
+                      <option value="500">500 req/min</option>
+                      <option value="1000">1000 req/min</option>
+                      <option value="5000">5000 req/min</option>
+                    </Select>
+                  </FormField>
+                  
+                  <FormField label="IP Whitelist">
+                    <Input placeholder="192.168.1.1, 10.0.0.1" />
+                  </FormField>
+                </div>
+
+                <FormField label="API Access Logs">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      className="rounded border-secondary-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="ml-3 text-sm text-secondary-700">
+                      Enable detailed API access logging
+                    </span>
+                  </div>
+                </FormField>
+              </div>
+            </div>
+
             {/* API Documentation & Tools */}
             <div className="border-t border-secondary-200 pt-6">
               <h3 className="text-md font-medium text-secondary-900 mb-4">API Tools & Documentation</h3>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button variant="outline">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Button variant="outline" onClick={() => window.open('/api/docs', '_blank')}>
                   <ApperIcon name="ExternalLink" size={16} className="mr-2" />
-                  API Documentation
+                  API Docs
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => toast.info('SDK download started')}>
                   <ApperIcon name="Download" size={16} className="mr-2" />
-                  Download SDKs
+                  SDKs
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => window.open('/api/examples', '_blank')}>
                   <ApperIcon name="Code" size={16} className="mr-2" />
-                  Code Examples
+                  Examples
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => window.open('/api/logs', '_blank')}>
                   <ApperIcon name="Activity" size={16} className="mr-2" />
                   API Logs
                 </Button>

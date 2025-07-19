@@ -37,22 +37,47 @@ const [searchTerm, setSearchTerm] = useState("");
     }
   };
 
-  const handleViewDetails = (delivery) => {
-toast.info(`Viewing details for delivery #${delivery.order_number || delivery.orderNumber}`);
+const handleViewDetails = (delivery) => {
+    // Create and show delivery details modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">Delivery Details</h2>
+            <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="space-y-4">
+            <div><strong>Order Number:</strong> #${delivery.order_number || delivery.orderNumber || 'N/A'}</div>
+            <div><strong>Status:</strong> ${delivery.status}</div>
+            <div><strong>Customer:</strong> ${delivery.delivery_address_name || delivery.deliveryAddress?.name || 'N/A'}</div>
+            <div><strong>Address:</strong> ${delivery.delivery_address_street || delivery.deliveryAddress?.street || ''}, ${delivery.delivery_address_city || delivery.deliveryAddress?.city || ''}</div>
+            <div><strong>Courier:</strong> ${delivery.courier?.Name || delivery.courier?.name || 'Unassigned'}</div>
+            <div><strong>Package Weight:</strong> ${delivery.package_weight || 'N/A'}kg</div>
+            <div><strong>Package Type:</strong> ${delivery.package_type || 'N/A'}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
   };
 
   const handleUpdateStatus = async (delivery) => {
     try {
-      const newStatus = delivery.status === "pending" ? "assigned" : 
-                       delivery.status === "assigned" ? "in-transit" :
-                       delivery.status === "in-transit" ? "delivered" : 
-                       "pending";
+      const statusOptions = ["pending", "assigned", "in-transit", "delivered", "failed"];
+      const currentIndex = statusOptions.indexOf(delivery.status);
+      const newStatus = statusOptions[(currentIndex + 1) % statusOptions.length];
       
       await updateDeliveryStatus(delivery.Id, newStatus);
       toast.success(`Delivery status updated to ${newStatus}`);
     } catch (err) {
       toast.error("Failed to update delivery status");
-}
+    }
   };
 
   const handleBulkUpload = async (file) => {
@@ -269,7 +294,7 @@ toast.info(`Viewing details for delivery #${delivery.order_number || delivery.or
           status={uploadStatus}
           results={uploadResults}
           onStatusChange={setUploadStatus}
-onProgressChange={setUploadProgress}
+          onProgressChange={setUploadProgress}
         />
       )}
     </div>

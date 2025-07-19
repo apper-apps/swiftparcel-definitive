@@ -404,17 +404,47 @@ class DeliveryService {
     }
   }
 
-  async searchDeliveries(query) {
+async searchDeliveries(query) {
     try {
       if (!query) return await this.getAll();
 
       const params = {
         fields: this.fields,
-        where: [
+        whereGroups: [
           {
-            FieldName: "order_number",
-            Operator: "Contains",
-            Values: [query]
+            operator: "OR",
+            subGroups: [
+              {
+                conditions: [
+                  {
+                    fieldName: "order_number",
+                    operator: "Contains",
+                    values: [query]
+                  }
+                ],
+                operator: "OR"
+              },
+              {
+                conditions: [
+                  {
+                    fieldName: "delivery_address_name",
+                    operator: "Contains",
+                    values: [query]
+                  }
+                ],
+                operator: "OR"
+              },
+              {
+                conditions: [
+                  {
+                    fieldName: "delivery_address_city",
+                    operator: "Contains",
+                    values: [query]
+                  }
+                ],
+                operator: "OR"
+              }
+            ]
           }
         ],
         orderBy: [

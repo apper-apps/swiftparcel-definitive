@@ -42,12 +42,12 @@ const RouteOptimizer = ({ courier, isOpen, onClose, onRouteSaved }) => {
     }
   }, [isOpen, courier]);
 
-  const loadRouteData = async () => {
+const loadRouteData = async () => {
     try {
       setLoading(true);
       const data = await courierService.getRouteForCourier(courier.Id);
       setRouteData(data);
-      setStops(data.stops);
+      setStops(data.routeStops || []);
       setHasChanges(false);
     } catch (error) {
       toast.error("Failed to load route data");
@@ -79,14 +79,14 @@ const RouteOptimizer = ({ courier, isOpen, onClose, onRouteSaved }) => {
     }
   };
 
-  const handleOptimizeRoute = async () => {
+const handleOptimizeRoute = async () => {
     try {
       setOptimizing(true);
       const optimizedRoute = await courierService.optimizeRoute(courier.Id, stops);
-      setStops(optimizedRoute.stops);
+      setStops(optimizedRoute.routeStops || optimizedRoute.stops || []);
       setRouteData(optimizedRoute);
       setHasChanges(true);
-      toast.success(`Route optimized! Estimated time saved: ${optimizedRoute.timeSaved} minutes`);
+      toast.success(`Route optimized! Estimated time saved: ${optimizedRoute.timeSaved || 0} minutes`);
     } catch (error) {
       toast.error("Failed to optimize route");
       console.error("Route optimization error:", error);

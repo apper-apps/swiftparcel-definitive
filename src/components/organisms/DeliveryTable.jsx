@@ -71,35 +71,38 @@ const DeliveryTable = ({
                 <td className="px-6 py-4 whitespace-nowrap">
 <div>
                     <div className="text-sm font-medium text-secondary-900">
-                      #{delivery.order_number || delivery.orderNumber}
+                      #{delivery.order_number || delivery.orderNumber || 'N/A'}
                     </div>
                     <div className="text-sm text-secondary-500">
-                      {format(new Date(delivery.created_at || delivery.createdAt), "MMM dd, HH:mm")}
+                      {delivery.created_at || delivery.createdAt ? 
+                        format(new Date(delivery.created_at || delivery.createdAt), "MMM dd, HH:mm") : 
+                        'Unknown Date'
+                      }
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div>
                     <div className="text-sm font-medium text-secondary-900">
-                      {delivery.delivery_address_name || delivery.deliveryAddress?.name}
+                      {delivery.delivery_address_name || delivery.deliveryAddress?.name || 'Unknown Customer'}
                     </div>
                     <div className="text-sm text-secondary-500">
-                      {delivery.delivery_address_street || delivery.deliveryAddress?.street}, {delivery.delivery_address_city || delivery.deliveryAddress?.city}
+                      {(delivery.delivery_address_street || delivery.deliveryAddress?.street || '')}{delivery.delivery_address_street || delivery.deliveryAddress?.street ? ', ' : ''}{delivery.delivery_address_city || delivery.deliveryAddress?.city || 'Unknown Location'}
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-{delivery.courier ? (
+                  {delivery.courier ? (
                     <div className="flex items-center">
                       <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
                         <ApperIcon name="User" size={16} className="text-primary-600" />
                       </div>
                       <div>
                         <div className="text-sm font-medium text-secondary-900">
-                          {delivery.courier?.Name || delivery.courier?.name}
+                          {delivery.courier?.Name || delivery.courier?.name || 'Unknown Courier'}
                         </div>
                         <div className="text-sm text-secondary-500">
-                          {delivery.courier?.vehicle_type || delivery.courier?.vehicleType}
+                          {delivery.courier?.vehicle_type || delivery.courier?.vehicleType || 'Unknown Vehicle'}
                         </div>
                       </div>
                     </div>
@@ -110,7 +113,7 @@ const DeliveryTable = ({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <StatusBadge status={delivery.status} />
                 </td>
-<td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-900">
                   {(delivery.estimated_delivery || delivery.estimatedDelivery) ? (
                     <div>
                       <div>Est: {format(new Date(delivery.estimated_delivery || delivery.estimatedDelivery), "HH:mm")}</div>
