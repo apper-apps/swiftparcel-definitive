@@ -47,22 +47,21 @@
   }
   
   .route-stop-card:hover {
-    @apply transform scale-[1.02];
+@apply transform scale-[1.02];
   }
   
   .sortable-ghost {
-    @apply opacity-50;
-.sortable-ghost {
     @apply opacity-50;
   }
   
   .sortable-chosen {
     @apply ring-2 ring-primary-500 ring-opacity-50;
+  }
+  
   /* Upload Zone Styles */
   .upload-zone {
     @apply border-2 border-dashed border-secondary-300 rounded-lg cursor-pointer transition-all duration-200 hover:border-primary-400 hover:bg-primary-50;
   }
-  
   .upload-zone.drag-active {
     @apply border-primary-500 bg-primary-50;
   }
