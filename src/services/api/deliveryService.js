@@ -105,8 +105,99 @@ class DeliveryService {
       delivery.deliveryAddress.name.toLowerCase().includes(searchTerm) ||
       delivery.deliveryAddress.street.toLowerCase().includes(searchTerm) ||
       delivery.status.toLowerCase().includes(searchTerm)
-    ).map(d => ({ ...d }));
+).map(d => ({ ...d }));
+  }
+
+  async bulkCreate(csvFile, onProgress) {
+    const Papa = await import('papaparse');
+    
+    return new Promise((resolve, reject) => {
+      Papa.parse(csvFile, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (results) => {
+          try {
+            const { data } = results;
+            const totalRows = data.length;
+            let processed = 0;
+            let successful = 0;
+            let failed = 0;
+            const errors = [];
+
+            onProgress(0);
+
+            for (let i = 0; i < data.length; i++) {
+              const row = data[i];
+              const rowNumber = i + 2; // +2 because CSV starts at row 1 and we skip header
+
+              try {
+                // Validate required fields
+                const requiredFields = ['customerName', 'customerStreet', 'customerCity', 'customerPostcode'];
+                const missingFields = requiredFields.filter(field => !row[field] || row[field].trim() === '');
+                
+                if (missingFields.length > 0) {
+                  throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+                }
+
+                // Create delivery object
+                const deliveryData = {
+                  deliveryAddress: {
+                    name: row.customerName.trim(),
+                    street: row.customerStreet.trim(),
+                    city: row.customerCity.trim(),
+                    postcode: row.customerPostcode.trim(),
+                    coordinates: { lat: 51.5074, lng: -0.1278 } // Default London coordinates
+                  },
+                  pickupAddress: {
+                    name: row.pickupName?.trim() || 'Pickup Location',
+                    street: row.pickupStreet?.trim() || '123 Default Street',
+                    city: row.pickupCity?.trim() || 'London',
+                    postcode: row.pickupPostcode?.trim() || 'W1A 0AX',
+                    coordinates: { lat: 51.5074, lng: -0.1278 }
+                  },
+                  package: {
+                    weight: parseFloat(row.packageWeight) || 1.0,
+                    dimensions: row.packageDimensions || '20x15x10cm',
+                    type: row.packageType?.trim() || 'General'
+                  }
+                };
+
+                // Create the delivery
+                await this.create(deliveryData);
+                successful++;
+              } catch (error) {
+                failed++;
+                errors.push({
+                  row: rowNumber,
+                  message: error.message
+                });
+              }
+
+              processed++;
+              const progress = Math.round((processed / totalRows) * 100);
+              onProgress(progress);
+
+              // Add small delay to show progress
+              if (i < data.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
+            }
+
+            resolve({
+              total: totalRows,
+              successful,
+              failed,
+              errors: errors.slice(0, 10) // Limit to first 10 errors
+            });
+          } catch (error) {
+            reject(error);
+          }
+        },
+        error: (error) => {
+          reject(new Error(`CSV parsing failed: ${error.message}`));
+        }
+      });
+    });
   }
 }
-
 export default new DeliveryService();

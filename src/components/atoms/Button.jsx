@@ -12,8 +12,9 @@ const Button = React.forwardRef(({
     default: "bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500",
     outline: "border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500",
     secondary: "bg-secondary-100 text-secondary-800 hover:bg-secondary-200 focus:ring-secondary-500",
-    ghost: "text-secondary-600 hover:bg-secondary-100 focus:ring-secondary-500",
+ghost: "text-secondary-600 hover:bg-secondary-100 focus:ring-secondary-500",
     danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+    info: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
   };
 
   const sizes = {

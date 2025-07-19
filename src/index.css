@@ -52,9 +52,38 @@
   
   .sortable-ghost {
     @apply opacity-50;
+.sortable-ghost {
+    @apply opacity-50;
   }
   
   .sortable-chosen {
     @apply ring-2 ring-primary-500 ring-opacity-50;
+  /* Upload Zone Styles */
+  .upload-zone {
+    @apply border-2 border-dashed border-secondary-300 rounded-lg cursor-pointer transition-all duration-200 hover:border-primary-400 hover:bg-primary-50;
+  }
+  
+  .upload-zone.drag-active {
+    @apply border-primary-500 bg-primary-50;
+  }
+  
+  .upload-zone:hover {
+    @apply border-primary-400 bg-primary-50;
+  }
+  
+  .upload-progress {
+    @apply bg-secondary-200 rounded-full h-2 overflow-hidden;
+  }
+  
+  .upload-progress-bar {
+    @apply bg-primary-600 h-full transition-all duration-300 ease-out;
+  }
+  
+  .upload-success {
+    @apply bg-green-50 border-green-200 text-green-800;
+  }
+  
+.upload-error {
+    @apply bg-red-50 border-red-200 text-red-800;
   }
 }
