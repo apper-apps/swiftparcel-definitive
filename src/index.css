@@ -33,7 +33,28 @@
     @apply bg-yellow-50 text-yellow-800 border border-yellow-200;
   }
   
-  .Toastify__toast--info {
+.Toastify__toast--info {
     @apply bg-blue-50 text-blue-800 border border-blue-200;
+  }
+
+  /* Drag and Drop Styles */
+  .route-stop-card {
+    @apply transition-transform duration-200;
+  }
+  
+  .route-stop-card.dragging {
+    @apply z-10;
+  }
+  
+  .route-stop-card:hover {
+    @apply transform scale-[1.02];
+  }
+  
+  .sortable-ghost {
+    @apply opacity-50;
+  }
+  
+  .sortable-chosen {
+    @apply ring-2 ring-primary-500 ring-opacity-50;
   }
 }

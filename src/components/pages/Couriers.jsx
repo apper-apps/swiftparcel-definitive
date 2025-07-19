@@ -1,20 +1,24 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import CourierGrid from "@/components/organisms/CourierGrid";
-import Card from "@/components/atoms/Card";
-import Button from "@/components/atoms/Button";
-import SearchBar from "@/components/molecules/SearchBar";
-import Select from "@/components/atoms/Select";
-import StatusBadge from "@/components/molecules/StatusBadge";
+import { toast } from "react-toastify";
 import ApperIcon from "@/components/ApperIcon";
 import Error from "@/components/ui/Error";
+import CourierGrid from "@/components/organisms/CourierGrid";
+import Deliveries from "@/components/pages/Deliveries";
+import SearchBar from "@/components/molecules/SearchBar";
+import StatusBadge from "@/components/molecules/StatusBadge";
+import Card from "@/components/atoms/Card";
+import Select from "@/components/atoms/Select";
+import Button from "@/components/atoms/Button";
+import RouteOptimizer from "@/components/organisms/RouteOptimizer";
 import useCouriers from "@/hooks/useCouriers";
-import { toast } from "react-toastify";
 
 const Couriers = () => {
   const { couriers, loading, error, updateCourierStatus, retryLoad } = useCouriers();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+const [statusFilter, setStatusFilter] = useState("all");
+  const [routeOptimizerOpen, setRouteOptimizerOpen] = useState(false);
+  const [selectedCourier, setSelectedCourier] = useState(null);
 
   const handleViewCourier = (courier) => {
     toast.info(`Viewing details for courier ${courier.name}`);
@@ -22,6 +26,22 @@ const Couriers = () => {
 
   const handleSearch = (query) => {
     setSearchTerm(query);
+  };
+
+  const handlePlanRoute = (courier) => {
+    setSelectedCourier(courier);
+    setRouteOptimizerOpen(true);
+    toast.info(`Planning route for courier ${courier.name}`);
+  };
+
+  const handleCloseRouteOptimizer = () => {
+    setRouteOptimizerOpen(false);
+    setSelectedCourier(null);
+  };
+
+  const handleRouteSaved = (routeData) => {
+    toast.success(`Route saved for ${selectedCourier?.name}`);
+    handleCloseRouteOptimizer();
   };
 
   const filteredCouriers = React.useMemo(() => {
@@ -222,12 +242,23 @@ const Couriers = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <CourierGrid
+<CourierGrid
           couriers={filteredCouriers}
           loading={loading}
           onViewCourier={handleViewCourier}
+          onPlanRoute={handlePlanRoute}
         />
       </motion.div>
+
+      {/* Route Optimizer Modal */}
+      {routeOptimizerOpen && selectedCourier && (
+        <RouteOptimizer
+          courier={selectedCourier}
+          isOpen={routeOptimizerOpen}
+          onClose={handleCloseRouteOptimizer}
+          onRouteSaved={handleRouteSaved}
+        />
+      )}
     </div>
   );
 };
