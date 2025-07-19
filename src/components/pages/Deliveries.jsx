@@ -10,7 +10,7 @@ import Card from "@/components/atoms/Card";
 import Select from "@/components/atoms/Select";
 import Button from "@/components/atoms/Button";
 import useDeliveries from "@/hooks/useDeliveries";
-import deliveryService from "@/services/deliveryService";
+import deliveryService from "@/services/api/deliveryService";
 
 const Deliveries = () => {
   const { 
@@ -38,7 +38,7 @@ const [searchTerm, setSearchTerm] = useState("");
   };
 
   const handleViewDetails = (delivery) => {
-    toast.info(`Viewing details for delivery #${delivery.orderNumber}`);
+toast.info(`Viewing details for delivery #${delivery.order_number || delivery.orderNumber}`);
   };
 
   const handleUpdateStatus = async (delivery) => {
@@ -269,9 +269,10 @@ const [searchTerm, setSearchTerm] = useState("");
           status={uploadStatus}
           results={uploadResults}
           onStatusChange={setUploadStatus}
-          onProgressChange={setUploadProgress}
+onProgressChange={setUploadProgress}
         />
       )}
+    </div>
   );
 };
 

@@ -42,11 +42,11 @@ const Dashboard = () => {
   };
 
   const handleViewDetails = (delivery) => {
-    toast.info(`Viewing details for delivery #${delivery.orderNumber}`);
+toast.info(`Viewing details for delivery #${delivery.order_number || delivery.orderNumber}`);
   };
 
   const handleUpdateStatus = (delivery) => {
-    toast.info(`Updating status for delivery #${delivery.orderNumber}`);
+    toast.info(`Updating status for delivery #${delivery.order_number || delivery.orderNumber}`);
   };
 
   useEffect(() => {

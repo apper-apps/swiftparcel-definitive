@@ -6,14 +6,15 @@ const useCouriers = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const loadCouriers = async () => {
+const loadCouriers = async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await courierService.getAll();
-      setCouriers(data);
+      setCouriers(data || []);
     } catch (err) {
       setError(err.message);
+      setCouriers([]);
     } finally {
       setLoading(false);
     }

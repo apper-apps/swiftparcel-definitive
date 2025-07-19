@@ -51,29 +51,31 @@ const CourierGrid = ({ couriers, loading, onViewCourier, onPlanRoute }) => {
                         <ApperIcon name="User" size={24} className="text-primary-600" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-secondary-900">{courier.name}</h3>
-                        <p className="text-sm text-secondary-500">{courier.vehicleType}</p>
+<h3 className="font-semibold text-secondary-900">{courier.Name || courier.name}</h3>
+                        <p className="text-sm text-secondary-500">{courier.vehicle_type || courier.vehicleType}</p>
                     </div>
                 </div>
                 <StatusBadge status={courier.status} />
             </div>
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                    <span className="text-sm text-secondary-600">Active Deliveries</span>
+<span className="text-sm text-secondary-600">Active Deliveries</span>
                     <span className="font-medium text-secondary-900">
-                        {courier.activeDeliveries}/{courier.capacity}
+                        {courier.active_deliveries || courier.activeDeliveries}/{courier.capacity}
                     </span>
                 </div>
                 <div className="w-full bg-secondary-200 rounded-full h-2">
                     <div
                         className="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full transition-all duration-300"
-                        style={{
-                            width: `${courier.activeDeliveries / courier.capacity * 100}%`
+style={{
+                            width: `${(courier.active_deliveries || courier.activeDeliveries) / courier.capacity * 100}%`
                         }} />
                 </div>
-                {courier.currentLocation && <div className="flex items-center text-sm text-secondary-600">
+{(courier.current_location || courier.currentLocation) && <div className="flex items-center text-sm text-secondary-600">
                     <ApperIcon name="MapPin" size={14} className="mr-2" />
-                    {courier.currentLocation.area}
+                    {typeof (courier.current_location || courier.currentLocation) === 'string' 
+                      ? (courier.current_location || courier.currentLocation)
+                      : (courier.current_location || courier.currentLocation)?.area}
                 </div>}
                 <div
                     className="flex items-center justify-between pt-2 border-t border-secondary-200">
@@ -82,7 +84,7 @@ const CourierGrid = ({ couriers, loading, onViewCourier, onPlanRoute }) => {
                                         </div>
                     <ApperIcon name="ChevronRight" size={16} className="text-secondary-400" />
                 </div>
-                {courier.activeDeliveries > 0 && <div className="mt-3 pt-3 border-t border-secondary-200">
+{(courier.active_deliveries || courier.activeDeliveries) > 0 && <div className="mt-3 pt-3 border-t border-secondary-200">
                     <button
                         onClick={e => {
                             e.stopPropagation();

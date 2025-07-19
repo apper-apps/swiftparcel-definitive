@@ -6,14 +6,15 @@ const useDeliveries = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const loadDeliveries = async () => {
+const loadDeliveries = async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await deliveryService.getAll();
-      setDeliveries(data);
+      setDeliveries(data || []);
     } catch (err) {
       setError(err.message);
+      setDeliveries([]);
     } finally {
       setLoading(false);
     }
@@ -24,9 +25,10 @@ const useDeliveries = () => {
       setLoading(true);
       setError(null);
       const data = await deliveryService.searchDeliveries(query);
-      setDeliveries(data);
+      setDeliveries(data || []);
     } catch (err) {
       setError(err.message);
+      setDeliveries([]);
     } finally {
       setLoading(false);
     }

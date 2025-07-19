@@ -1,175 +1,351 @@
-import couriersData from "@/services/mockData/couriers.json";
+import { toast } from "react-toastify";
+
 class CourierService {
   constructor() {
-    this.couriers = [...couriersData];
+    // Initialize ApperClient
+    const { ApperClient } = window.ApperSDK;
+    this.apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    this.tableName = 'courier';
+    
+    // Define all fields from the courier table
+    this.fields = [
+      { "field": { "Name": "Name" } },
+      { "field": { "Name": "Tags" } },
+      { "field": { "Name": "Owner" } },
+      { "field": { "Name": "CreatedOn" } },
+      { "field": { "Name": "CreatedBy" } },
+      { "field": { "Name": "ModifiedOn" } },
+      { "field": { "Name": "ModifiedBy" } },
+      { "field": { "Name": "status" } },
+      { "field": { "Name": "current_location" } },
+      { "field": { "Name": "active_deliveries" } },
+      { "field": { "Name": "capacity" } },
+      { "field": { "Name": "vehicle_type" } },
+      { "field": { "Name": "joined_date" } },
+      { "field": { "Name": "completed_deliveries" } },
+      { "field": { "Name": "rating" } },
+      { "field": { "Name": "phone" } }
+    ];
   }
 
   async getAll() {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return [...this.couriers];
+    try {
+      const params = {
+        fields: this.fields,
+        orderBy: [
+          {
+            fieldName: "Name",
+            sorttype: "ASC"
+          }
+        ],
+        pagingInfo: {
+          limit: 100,
+          offset: 0
+        }
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return [];
+      }
+
+      if (!response.data || response.data.length === 0) {
+        return [];
+      }
+
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching couriers:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return [];
+    }
   }
 
   async getById(id) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const courier = this.couriers.find(c => c.Id === parseInt(id));
-    if (!courier) {
-      throw new Error("Courier not found");
+    try {
+      const params = {
+        fields: this.fields
+      };
+      
+      const response = await this.apperClient.getRecordById(this.tableName, parseInt(id), params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return null;
+      }
+
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error(`Error fetching courier with ID ${id}:`, error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return null;
     }
-    return { ...courier };
   }
 
   async create(courierData) {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    
-    const newCourier = {
-      Id: Math.max(...this.couriers.map(c => c.Id)) + 1,
-      status: "available",
-      activeDeliveries: 0,
-      joinedDate: new Date().toISOString().split("T")[0],
-      completedDeliveries: 0,
-      rating: 5.0,
-      currentLocation: null,
-      ...courierData
-    };
-    
-    this.couriers.push(newCourier);
-    return { ...newCourier };
+    try {
+      // Only include updateable fields
+      const updateableData = {
+        Name: courierData.Name || courierData.name,
+        Tags: courierData.Tags || "",
+        Owner: courierData.Owner ? parseInt(courierData.Owner) : null,
+        status: courierData.status || "available",
+        current_location: courierData.current_location || courierData.currentLocation || "",
+        active_deliveries: parseInt(courierData.active_deliveries || courierData.activeDeliveries || 0),
+        capacity: parseInt(courierData.capacity || 3),
+        vehicle_type: courierData.vehicle_type || courierData.vehicleType || "",
+        joined_date: courierData.joined_date || courierData.joinedDate || new Date().toISOString().split('T')[0],
+        completed_deliveries: parseInt(courierData.completed_deliveries || courierData.completedDeliveries || 0),
+        rating: parseFloat(courierData.rating || 5.0),
+        phone: courierData.phone || ""
+      };
+
+      const params = {
+        records: [updateableData]
+      };
+
+      const response = await this.apperClient.createRecord(this.tableName, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return null;
+      }
+
+      if (response.results) {
+        const successfulRecords = response.results.filter(result => result.success);
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create courier ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+          
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              toast.error(`${error.fieldLabel}: ${error.message}`);
+            });
+            if (record.message) toast.error(record.message);
+          });
+        }
+        
+        if (successfulRecords.length > 0) {
+          return successfulRecords[0].data;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error creating courier:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return null;
+    }
   }
 
   async update(id, updates) {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    const index = this.couriers.findIndex(c => c.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Courier not found");
+    try {
+      // Only include updateable fields
+      const updateableData = {
+        Id: parseInt(id),
+        ...(updates.Name && { Name: updates.Name }),
+        ...(updates.Tags !== undefined && { Tags: updates.Tags }),
+        ...(updates.Owner && { Owner: parseInt(updates.Owner) }),
+        ...(updates.status && { status: updates.status }),
+        ...(updates.current_location !== undefined && { current_location: updates.current_location }),
+        ...(updates.active_deliveries !== undefined && { active_deliveries: parseInt(updates.active_deliveries) }),
+        ...(updates.capacity !== undefined && { capacity: parseInt(updates.capacity) }),
+        ...(updates.vehicle_type && { vehicle_type: updates.vehicle_type }),
+        ...(updates.joined_date && { joined_date: updates.joined_date }),
+        ...(updates.completed_deliveries !== undefined && { completed_deliveries: parseInt(updates.completed_deliveries) }),
+        ...(updates.rating !== undefined && { rating: parseFloat(updates.rating) }),
+        ...(updates.phone && { phone: updates.phone })
+      };
+
+      const params = {
+        records: [updateableData]
+      };
+
+      const response = await this.apperClient.updateRecord(this.tableName, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return null;
+      }
+
+      if (response.results) {
+        const successfulRecords = response.results.filter(result => result.success);
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to update courier ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+          
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              toast.error(`${error.fieldLabel}: ${error.message}`);
+            });
+            if (record.message) toast.error(record.message);
+          });
+        }
+        
+        if (successfulRecords.length > 0) {
+          return successfulRecords[0].data;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating courier:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return null;
     }
-    
-    this.couriers[index] = { ...this.couriers[index], ...updates };
-    return { ...this.couriers[index] };
   }
 
   async delete(id) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    const index = this.couriers.findIndex(c => c.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Courier not found");
+    try {
+      const params = {
+        RecordIds: Array.isArray(id) ? id : [parseInt(id)]
+      };
+
+      const response = await this.apperClient.deleteRecord(this.tableName, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return false;
+      }
+
+      if (response.results) {
+        const successfulDeletions = response.results.filter(result => result.success);
+        const failedDeletions = response.results.filter(result => !result.success);
+        
+        if (failedDeletions.length > 0) {
+          console.error(`Failed to delete courier ${failedDeletions.length} records:${JSON.stringify(failedDeletions)}`);
+          
+          failedDeletions.forEach(record => {
+            if (record.message) toast.error(record.message);
+          });
+        }
+        
+        return successfulDeletions.length === params.RecordIds.length;
+      }
+
+      return false;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error deleting courier:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return false;
     }
-    
-    this.couriers.splice(index, 1);
-    return true;
   }
 
   async getAvailableCouriers() {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    return this.couriers
-      .filter(courier => courier.status === "available")
-      .map(c => ({ ...c }));
-  }
+    try {
+      const params = {
+        fields: this.fields,
+        where: [
+          {
+            FieldName: "status",
+            Operator: "EqualTo",
+            Values: ["available"]
+          }
+        ],
+        orderBy: [
+          {
+            fieldName: "Name",
+            sorttype: "ASC"
+          }
+        ]
+      };
 
-  async updateLocation(id, location) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    const index = this.couriers.findIndex(c => c.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Courier not found");
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching available couriers:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return [];
     }
-    
-    this.couriers[index].currentLocation = location;
-    return { ...this.couriers[index] };
   }
 
   async getCourierStats() {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    return {
-      total: this.couriers.length,
-      available: this.couriers.filter(c => c.status === "available").length,
-busy: this.couriers.filter(c => c.status === "busy").length,
-      offline: this.couriers.filter(c => c.status === "offline").length
-    };
-  }
+    try {
+      const params = {
+        aggregators: [
+          {
+            id: "total",
+            fields: [{ "field": { "Name": "Id" }, "Function": "Count" }]
+          },
+          {
+            id: "available",
+            fields: [{ "field": { "Name": "Id" }, "Function": "Count" }],
+            where: [{ FieldName: "status", Operator: "EqualTo", Values: ["available"] }]
+          },
+          {
+            id: "busy", 
+            fields: [{ "field": { "Name": "Id" }, "Function": "Count" }],
+            where: [{ FieldName: "status", Operator: "EqualTo", Values: ["busy"] }]
+          },
+          {
+            id: "offline",
+            fields: [{ "field": { "Name": "Id" }, "Function": "Count" }],
+            where: [{ FieldName: "status", Operator: "EqualTo", Values: ["offline"] }]
+          }
+        ]
+      };
 
-  async getRouteForCourier(courierId) {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Import delivery service to get courier's assigned deliveries
-    const deliveryService = await import('./deliveryService.js');
-    const allDeliveries = await deliveryService.default.getAll();
-    
-    const courierDeliveries = allDeliveries.filter(delivery => 
-      delivery.courier && delivery.courier.id === parseInt(courierId) &&
-      (delivery.status === 'assigned' || delivery.status === 'in-transit')
-    );
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return { total: 0, available: 0, busy: 0, offline: 0 };
+      }
 
-    const routeStops = courierDeliveries.map(delivery => ({
-      Id: delivery.Id,
-      orderNumber: delivery.orderNumber,
-      address: delivery.deliveryAddress,
-      estimatedTime: delivery.estimatedDelivery,
-      packageInfo: delivery.package,
-      status: delivery.status,
-      distance: this.calculateDistance(delivery.pickupAddress.coordinates, delivery.deliveryAddress.coordinates)
-    }));
+      const stats = { total: 0, available: 0, busy: 0, offline: 0 };
+      
+      if (response.aggregators) {
+        response.aggregators.forEach(agg => {
+          stats[agg.id] = agg.value || 0;
+        });
+      }
 
-    return {
-      courierId: parseInt(courierId),
-      stops: routeStops,
-      totalDistance: routeStops.reduce((sum, stop) => sum + stop.distance, 0),
-      estimatedTotalTime: routeStops.length * 15 // 15 minutes per stop average
-    };
-  }
-
-  async optimizeRoute(courierId, stops) {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Simple optimization algorithm - sort by proximity
-    const optimizedStops = [...stops].sort((a, b) => {
-      // Sort by distance from pickup to delivery
-      return a.distance - b.distance;
-    });
-
-    // Recalculate total metrics
-    const totalDistance = optimizedStops.reduce((sum, stop) => sum + stop.distance, 0);
-    const estimatedTotalTime = optimizedStops.length * 12; // Optimized to 12 minutes per stop
-
-    return {
-      courierId: parseInt(courierId),
-      stops: optimizedStops,
-      totalDistance,
-      estimatedTotalTime,
-      timeSaved: (stops.length * 15) - estimatedTotalTime
-    };
-  }
-
-  async updateRouteOrder(courierId, reorderedStops) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    // Calculate new metrics based on reordered stops
-    const totalDistance = reorderedStops.reduce((sum, stop) => sum + stop.distance, 0);
-    const estimatedTotalTime = reorderedStops.length * 13; // Manual reorder efficiency
-
-    return {
-      courierId: parseInt(courierId),
-      stops: reorderedStops,
-      totalDistance,
-      estimatedTotalTime,
-      success: true
-    };
-  }
-
-  calculateDistance(coord1, coord2) {
-    // Simple distance calculation (Haversine formula approximation)
-    const R = 6371; // Earth's radius in kilometers
-    const dLat = (coord2.lat - coord1.lat) * Math.PI / 180;
-    const dLng = (coord2.lng - coord1.lng) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(coord1.lat * Math.PI / 180) * Math.cos(coord2.lat * Math.PI / 180) *
-      Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; // Distance in kilometers
+      return stats;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching courier stats:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return { total: 0, available: 0, busy: 0, offline: 0 };
+    }
   }
 }
 

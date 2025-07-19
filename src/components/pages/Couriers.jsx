@@ -49,9 +49,9 @@ const [statusFilter, setStatusFilter] = useState("all");
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(courier =>
-        courier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        courier.vehicleType.toLowerCase().includes(searchTerm.toLowerCase())
+filtered = filtered.filter(courier =>
+        (courier.Name || courier.name).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (courier.vehicle_type || courier.vehicleType).toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
