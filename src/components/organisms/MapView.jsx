@@ -14,15 +14,15 @@ const MapView = ({ deliveries, couriers, loading }) => {
   });
 
   // Simulate map markers and interactions
-  const mapMarkers = React.useMemo(() => {
+const mapMarkers = React.useMemo(() => {
     if (!deliveries || !couriers) return [];
     
     const deliveryMarkers = deliveries.map(delivery => ({
       id: delivery.Id,
       type: "delivery",
       position: {
-        lat: delivery.deliveryAddress.coordinates?.lat || 51.5074 + (Math.random() - 0.5) * 0.1,
-        lng: delivery.deliveryAddress.coordinates?.lng || -0.1278 + (Math.random() - 0.5) * 0.1
+        lat: delivery.deliveryAddress?.coordinates?.lat || 51.5074 + (Math.random() - 0.5) * 0.1,
+        lng: delivery.deliveryAddress?.coordinates?.lng || -0.1278 + (Math.random() - 0.5) * 0.1
       },
       data: delivery,
       status: delivery.status
@@ -33,7 +33,10 @@ const MapView = ({ deliveries, couriers, loading }) => {
       .map(courier => ({
         id: `courier-${courier.Id}`,
         type: "courier",
-        position: courier.currentLocation.coordinates,
+        position: {
+          lat: courier.currentLocation?.coordinates?.lat || 51.5074 + (Math.random() - 0.5) * 0.1,
+          lng: courier.currentLocation?.coordinates?.lng || -0.1278 + (Math.random() - 0.5) * 0.1
+        },
         data: courier,
         status: courier.status
       }));
