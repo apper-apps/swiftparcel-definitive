@@ -104,8 +104,47 @@ const handleOptimizeRoute = async () => {
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
+if (!isOpen) return null;
 
-  if (!isOpen) return null;
+  // Add null safety check for courier prop
+  if (!courier) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-lg p-6 w-full max-w-md mx-4"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Route Optimizer</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="p-1"
+              >
+                <ApperIcon name="X" size={20} />
+              </Button>
+            </div>
+            <div className="text-center py-8">
+              <ApperIcon name="AlertCircle" size={48} className="mx-auto text-yellow-500 mb-4" />
+              <p className="text-gray-600">No courier data available for route optimization.</p>
+              <Button onClick={onClose} className="mt-4">
+                Close
+              </Button>
+            </div>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence>
