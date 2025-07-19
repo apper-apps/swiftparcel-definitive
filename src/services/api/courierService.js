@@ -296,7 +296,7 @@ class CourierService {
     }
   }
 
-  async getCourierStats() {
+async getCourierStats() {
     try {
       const params = {
         aggregators: [
@@ -345,6 +345,91 @@ class CourierService {
         console.error(error.message);
       }
       return { total: 0, available: 0, busy: 0, offline: 0 };
+    }
+  }
+
+  async getRouteForCourier(courierId) {
+    try {
+      const params = {
+        fields: [
+          { "field": { "Name": "Id" } },
+          { "field": { "Name": "Name" } },
+          { "field": { "Name": "order_number" } },
+          { "field": { "Name": "status" } },
+          { "field": { "Name": "pickup_address_name" } },
+          { "field": { "Name": "pickup_address_street" } },
+          { "field": { "Name": "pickup_address_city" } },
+          { "field": { "Name": "pickup_address_postcode" } },
+          { "field": { "Name": "delivery_address_name" } },
+          { "field": { "Name": "delivery_address_street" } },
+          { "field": { "Name": "delivery_address_city" } },
+          { "field": { "Name": "delivery_address_postcode" } },
+          { "field": { "Name": "estimated_delivery" } },
+          { "field": { "Name": "package_weight" } },
+          { "field": { "Name": "package_type" } },
+          { "field": { "Name": "courier" } }
+        ],
+        where: [
+          { FieldName: "courier", Operator: "EqualTo", Values: [parseInt(courierId)] },
+          { FieldName: "status", Operator: "ExactMatch", Values: ["pending", "assigned", "in-transit"] }
+        ],
+        orderBy: [
+          { fieldName: "estimated_delivery", sorttype: "ASC" }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords("delivery", params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return { deliveries: [], optimizedRoute: [], totalDistance: 0, estimatedTime: 0 };
+      }
+
+      const deliveries = response.data || [];
+      
+      // Format route data for optimization
+      const routeStops = deliveries.map((delivery, index) => ({
+        id: delivery.Id,
+        orderId: delivery.order_number,
+        type: 'delivery',
+        priority: delivery.status === 'assigned' ? 'high' : 'normal',
+        address: {
+          name: delivery.delivery_address_name,
+          street: delivery.delivery_address_street,
+          city: delivery.delivery_address_city,
+          postcode: delivery.delivery_address_postcode,
+          fullAddress: `${delivery.delivery_address_street}, ${delivery.delivery_address_city} ${delivery.delivery_address_postcode}`
+        },
+        pickupAddress: {
+          name: delivery.pickup_address_name,
+          street: delivery.pickup_address_street,
+          city: delivery.pickup_address_city,
+          postcode: delivery.pickup_address_postcode,
+          fullAddress: `${delivery.pickup_address_street}, ${delivery.pickup_address_city} ${delivery.pickup_address_postcode}`
+        },
+        estimatedTime: delivery.estimated_delivery,
+        packageWeight: delivery.package_weight || 0,
+        packageType: delivery.package_type || 'standard',
+        status: delivery.status,
+        sequence: index + 1
+      }));
+
+      return {
+        deliveries: deliveries,
+        routeStops: routeStops,
+        optimizedRoute: routeStops, // Initially same as stops, can be optimized
+        totalDistance: routeStops.length * 2.5, // Estimated 2.5km average per stop
+        estimatedTime: routeStops.length * 15, // Estimated 15 minutes per stop
+        courierCapacity: 10, // Default capacity
+        totalWeight: routeStops.reduce((sum, stop) => sum + stop.packageWeight, 0)
+      };
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching courier route:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return { deliveries: [], routeStops: [], optimizedRoute: [], totalDistance: 0, estimatedTime: 0 };
     }
   }
 }
