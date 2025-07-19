@@ -11,6 +11,7 @@ import Select from "@/components/atoms/Select";
 import Button from "@/components/atoms/Button";
 import useDeliveries from "@/hooks/useDeliveries";
 import deliveryService from "@/services/deliveryService";
+
 const Deliveries = () => {
   const { 
     deliveries, 
@@ -255,6 +256,7 @@ const [searchTerm, setSearchTerm] = useState("");
       )}
 
       {/* Bulk Upload Modal */}
+{/* Bulk Upload Modal */}
       {showBulkUpload && (
         <BulkUploadModal
           isOpen={showBulkUpload}
@@ -266,13 +268,14 @@ const [searchTerm, setSearchTerm] = useState("");
           progress={uploadProgress}
           status={uploadStatus}
           results={uploadResults}
+          onStatusChange={setUploadStatus}
+          onProgressChange={setUploadProgress}
         />
       )}
-    </div>
   );
 };
 
-const BulkUploadModal = ({ isOpen, onClose, onUpload, progress, status, results }) => {
+const BulkUploadModal = ({ isOpen, onClose, onUpload, progress, status, results, onStatusChange, onProgressChange }) => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = React.useRef(null);
 
@@ -462,9 +465,9 @@ const BulkUploadModal = ({ isOpen, onClose, onUpload, progress, status, results 
               <p className="text-secondary-600 mb-4">
                 There was an error processing your file. Please check the format and try again.
               </p>
-              <Button variant="outline" onClick={() => {
-                setUploadStatus(null);
-                setUploadProgress(0);
+<Button variant="outline" onClick={() => {
+                onStatusChange(null);
+                onProgressChange(0);
               }}>
                 Try Again
               </Button>
